@@ -1,0 +1,7 @@
+<?php
+
+$GLOBALS['settings'] = array();
+
+$GLOBALS['settings']['url'] = '...';
+$GLOBALS['settings']['username'] = '...';
+$GLOBALS['settings']['password'] = '...';
