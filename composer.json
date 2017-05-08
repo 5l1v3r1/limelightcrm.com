@@ -1,0 +1,14 @@
+{
+    "name": "mahendrakalkura/limelightcrm.com",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Mahendra Kalkura",
+            "email": "mahendra@kalkura.com"
+        }
+    ],
+    "require": {
+        "behat/mink": "^1.7",
+        "behat/mink-goutte-driver": "^1.2"
+    }
+}
