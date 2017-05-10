@@ -335,8 +335,13 @@ function selectCampaigns($client)
 function insertCampaign($client, $campaign, $product, $gateway)
 {
     $options = array(
+
+        'query' => array(
+            'action' => 'll_ajax_create_campaign',
+            'top' => '1',
+        ),
         'form_params' => array(
-            'account_updater_id' => '',
+            sprintf('products_main_sequence[%s]', $product['id']) => '<!--SEQUENCE-->',
             'action' => 'll_ajax_create_campaign',
             'campaign_id' => $campaign['id'],
             'flag_gateway_disabled' => '0',
@@ -367,8 +372,8 @@ function insertCampaign($client, $campaign, $product, $gateway)
             'radio_post_back_order_status[0]' => '1',
             'radio_post_back_order_type[0]' => '1',
             'radio_post_back_payments[0]' => '2',
-            'search_product' => 'Add a Product: Search by Id or Name',
             'search_product_upsell' => 'Add a Product: Search by Product Id or Name',
+            'search_product' => 'Add a Product: Search by Id or Name',
             'select_alt_pay_provider_bitcoin_pg' => '',
             'select_alt_pay_provider_bp_boleto' => '',
             'select_alt_pay_provider_brazilpay' => '',
@@ -406,7 +411,6 @@ function insertCampaign($client, $campaign, $product, $gateway)
 
     $body = $response->getBody();
     $body = json_decode($body, true);
-    print_r($body);
     if (strpos($body['message'], 'API Integration successfully saved!') === false) {
         die("insertCampaign() - #2");
     }
@@ -429,7 +433,7 @@ function insertCampaign($client, $campaign, $product, $gateway)
 function deleteCampaign($client, $campaign)
 {
     $options = array(
-        'form_paramsy' => array(
+        'query' => array(
             'action' => 'll_ajax_delete_campaign',
             'id' => $campaign['id'],
         ),
@@ -441,7 +445,6 @@ function deleteCampaign($client, $campaign)
 
     $body = $response->getBody();
     $body = json_decode($body, true);
-    print_r($body);
     if ($body['message'] !== 'Successfully Deleted Campaign!') {
         die("deleteCampaign() - #2");
     }
@@ -700,9 +703,6 @@ function getSQLHash($body)
 // $campaign = insertCampaign($client, $campaign, $product, $gateway);
 // print_r($campaign);
 
-// $campaign = array(
-//     'id' => '203',
-// );
 // deleteCampaign($client, $campaign);
 
 // deleteGateway($client, $gateway);
