@@ -3,5 +3,11 @@
 $GLOBALS['settings'] = array();
 
 $GLOBALS['settings']['url'] = '...';
-$GLOBALS['settings']['username'] = '...';
-$GLOBALS['settings']['password'] = '...';
+
+$GLOBALS['settings']['api'] = array();
+$GLOBALS['settings']['api']['username'] = '...';
+$GLOBALS['settings']['api']['password'] = '...';
+
+$GLOBALS['settings']['non-api'] = array();
+$GLOBALS['settings']['non-api']['username'] = '...';
+$GLOBALS['settings']['non-api']['password'] = '...';
