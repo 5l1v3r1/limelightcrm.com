@@ -447,181 +447,153 @@ function deleteCampaign($client, $campaign)
     }
 }
 
-function newOrderCardOnFile($order)
+function newOrderCardOnFile($client, $order)
 {
-    /**
-     * /admin/transact.php
-     * AFFID =
-     * AFID =
-     * AID =
-     * alt_pay_payer_id =
-     * alt_pay_token =
-     * auth_amount =
-     * billingAddress1 =
-     * billingAddress2 =
-     * billingCity =
-     * billingCountry =
-     * billingFirstName =
-     * billingLastName =
-     * billingSameAsShipping =
-     * billingState =
-     * billingZip =
-     * C1 =
-     * C2 =
-     * C3 =
-     * campaignId =
-     * cascade_enabled =
-     * cascade_override =
-     * checkAccountNumber =
-     * checkRoutingNumber =
-     * click_id =
-     * createdBy =
-     * creditCardNumber =
-     * creditCardType =
-     * CVV =
-     * dynamic_product_price_XX =
-     * email =
-     * eurodebit_acct_num =
-     * eurodebit_route_num =
-     * expirationDate =
-     * firstName =
-     * force_subscription_cycle =
-     * forceGatewayId =
-     * initializeNewSubscription =
-     * ipAddress =
-     * lastName =
-     * master_order_id =
-     * method = NewOrderCardOnFile
-     * notes =
-     * OPT =
-     * password
-     * phone =
-     * preserve_force_gateway =
-     * previousOrderId =
-     * product_attribute =
-     * product_qty_x =
-     * productId =
-     * promoCode =
-     * prospectId =
-     * recurring_days =
-     * save_customer =
-     * secretSSN =
-     * sepa_bic =
-     * sepa_iban =
-     * sessionId =
-     * shippingAddress1 =
-     * shippingAddress2 =
-     * shippingCity =
-     * shippingCountry =
-     * shippingId =
-     * shippingState =
-     * shippingZip =
-     * SID =
-     * subscription_day =
-     * subscription_week =
-     * temp_customer_id =
-     * thm_session _id =
-     * three_d_redirect_url =
-     * total_installments =
-     * tranType =
-     * upsellCount =
-     * upsellProductIds =
-     * username =
-     */
+    $options = array(
+        'form_params' => array(
+            'billingAddress1' => $order['billing_address_1'],
+            'billingAddress2' => $order['billing_address_2'],
+            'billingCity' => $order['billing_city'],
+            'billingCountry' => $order['billing_country'],
+            'billingState' => $order['billing_state'],
+            'billingZip' => $order['billing_zip'],
+            'campaignId' => $order['campaign_id'],
+            'creditCardNumber' => $order['credit_card_number'],
+            'creditCardType' => $order['credit_card_type'],
+            'CVV' => $order['cvv'],
+            'email' => $order['email'],
+            'expirationDate' => $order['expiration_date'],
+            'firstName' => $order['first_name'],
+            'ipAddress' => $order['ip_address'],
+            'lastName' => $order['last_name'],
+            'method' => 'NewOrder',
+            'password' => $GLOBALS['settings']['api']['password'],
+            'phone' => $order['phone'],
+            'productId' => $order['product_id'],
+            'shippingAddress1' => $order['shipping_address_1'],
+            'shippingAddress2' => $order['shipping_address_2'],
+            'shippingCity' => $order['shipping_city'],
+            'shippingCountry' => $order['shipping_country'],
+            'shippingId' => $order['shipping_id'],
+            'shippingState' => $order['shipping_state'],
+            'shippingZip' => $order['shipping_zip'],
+            'tranType' => 'Sale',
+            'upsellCount' => '0',
+            'username' => $GLOBALS['settings']['api']['username'],
+        ),
+    );
+    $response = $client->request('POST', '/admin/transact.php', $options);
+    if ($response->getStatusCode() !== 200) {
+        die("newOrderCardOnFile() - #1");
+    }
+
+    $body = (string) $response->getBody();
+    parse_str($body, $body);
+    if ($body['responseCode'] !== '100') {
+        die("newOrderCardOnFile() - #2");
+    }
+
     return $order;
 }
 
-function newOrderWithProspect($order)
+function newProspect($client, $order)
 {
-    /**
-     * /admin/transact.php
-     * AFFID =
-     * AFID =
-     * AID =
-     * alt_pay_payer_id =
-     * alt_pay_token =
-     * auth_amount =
-     * billingAddress1 =
-     * billingAddress2 =
-     * billingCity =
-     * billingCountry =
-     * billingFirstName =
-     * billingLastName =
-     * billingSameAsShipping =
-     * billingState =
-     * billingZip =
-     * C1 =
-     * C2 =
-     * C3 =
-     * campaignId =
-     * cascade_enabled =
-     * cascade_override =
-     * checkAccountNumber =
-     * checkRoutingNumber =
-     * click_id =
-     * createdBy =
-     * creditCardNumber =
-     * creditCardType =
-     * CVV =
-     * dynamic_product_price_XX =
-     * email =
-     * eurodebit_acct_num =
-     * eurodebit_route_num =
-     * expirationDate =
-     * firstName =
-     * force_subscription_cycle =
-     * forceGatewayId =
-     * initializeNewSubscription =
-     * ipAddress =
-     * lastName =
-     * master_order_id =
-     * method = NewOrderWithProspect
-     * notes =
-     * OPT =
-     * password
-     * phone =
-     * preserve_force_gateway =
-     * previousOrderId =
-     * product_attribute =
-     * product_qty_x =
-     * productId =
-     * promoCode =
-     * prospectId =
-     * recurring_days =
-     * save_customer =
-     * secretSSN =
-     * sepa_bic =
-     * sepa_iban =
-     * sessionId =
-     * shippingAddress1 =
-     * shippingAddress2 =
-     * shippingCity =
-     * shippingCountry =
-     * shippingId =
-     * shippingState =
-     * shippingZip =
-     * SID =
-     * subscription_day =
-     * subscription_week =
-     * temp_customer_id =
-     * thm_session _id =
-     * three_d_redirect_url =
-     * total_installments =
-     * tranType =
-     * upsellCount =
-     * upsellProductIds =
-     * username =
-     */
+    $options = array(
+        'form_params' => array(
+            'address1' => $order['billing_address_1'],
+            'address2' => $order['billing_address_2'],
+            'campaignId' => $order['campaign_id'],
+            'city' => $order['billing_city'],
+            'country' => $order['billing_country'],
+            'email' => $order['email'],
+            'firstName' => $order['first_name'],
+            'ipAddress' => $order['ip_address'],
+            'lastName' => $order['last_name'],
+            'method' => 'NewProspect',
+            'password' => $GLOBALS['settings']['api']['password'],
+            'phone' => $order['phone'],
+            'state' => $order['billing_state'],
+            'username' => $GLOBALS['settings']['api']['username'],
+            'zip' => $order['billing_zip'],
+        ),
+    );
+    $response = $client->request('POST', '/admin/transact.php', $options);
+    if ($response->getStatusCode() !== 200) {
+        die("newProspect() - #1");
+    }
+
+    $body = (string) $response->getBody();
+    parse_str($body, $body);
+    if ($body['responseCode'] !== '100') {
+        die("newProspect() - #2");
+    }
+
+    $order['prospect_id'] = $body['prospectId'];
+
     return $order;
 }
 
-function getClient()
+function newOrderWithProspect($client, $order)
+{
+    $options = array(
+        'form_params' => array(
+            'billingAddress1' => $order['billing_address_1'],
+            'billingAddress2' => $order['billing_address_2'],
+            'billingCity' => $order['billing_city'],
+            'billingCountry' => $order['billing_country'],
+            'billingState' => $order['billing_state'],
+            'billingZip' => $order['billing_zip'],
+            'campaignId' => $order['campaign_id'],
+            'creditCardNumber' => $order['credit_card_number'],
+            'creditCardType' => $order['credit_card_type'],
+            'CVV' => $order['cvv'],
+            'email' => $order['email'],
+            'expirationDate' => $order['expiration_date'],
+            'firstName' => $order['first_name'],
+            'ipAddress' => $order['ip_address'],
+            'lastName' => $order['last_name'],
+            'method' => 'NewOrderWithProspect',
+            'password' => $GLOBALS['settings']['api']['password'],
+            'prospectId' => $order['prospect_id'],
+            'phone' => $order['phone'],
+            'productId' => $order['product_id'],
+            'shippingAddress1' => $order['shipping_address_1'],
+            'shippingAddress2' => $order['shipping_address_2'],
+            'shippingCity' => $order['shipping_city'],
+            'shippingCountry' => $order['shipping_country'],
+            'shippingId' => $order['shipping_id'],
+            'shippingState' => $order['shipping_state'],
+            'shippingZip' => $order['shipping_zip'],
+            'tranType' => 'Sale',
+            'upsellCount' => '0',
+            'username' => $GLOBALS['settings']['api']['username'],
+        ),
+    );
+    $response = $client->request('POST', '/admin/transact.php', $options);
+    if ($response->getStatusCode() !== 200) {
+        die("newOrderWithProspect() - #1");
+    }
+
+    $body = (string) $response->getBody();
+    parse_str($body, $body);
+    if ($body['responseCode'] !== '100') {
+        die("newOrderWithProspect() - #2");
+    }
+
+    return $order;
+}
+
+function getClient($secure)
 {
     $options = array(
         'base_uri' => $GLOBALS['settings']['url'],
         'cookies' => true,
     );
     $client = new \GuzzleHttp\Client($options);
+    if (!$secure) {
+        return $client;
+    }
+
     $response = $client->request('GET', '/admin/login.php');
     if ($response->getStatusCode() !== 200) {
         die("getClient() - #1");
@@ -635,8 +607,8 @@ function getClient()
 
     $options = array(
         'form_params' => array(
-            'admin_name' => $GLOBALS['settings']['username'],
-            'admin_pass' => $GLOBALS['settings']['password'],
+            'admin_name' => $GLOBALS['settings']['non-api']['username'],
+            'admin_pass' => $GLOBALS['settings']['non-api']['password'],
             'login_url' => '',
             'securityToken' => $security_token,
         ),
@@ -672,13 +644,7 @@ function getSQLHash($body)
     return '';
 }
 
-function getURL($path)
-{
-    $url = sprintf('%s%s', $GLOBALS['settings']['url'], $path);
-    return $url;
-}
-
-$client = getClient();
+// $client = getClient(true);
 
 // $products = selectProducts($client);
 // print_r($products);
@@ -743,8 +709,33 @@ $client = getClient();
 
 // deleteProduct($client, $product);
 
-// $order = array();
-// $order = newOrderCardOnFile($order);
-
-// $order = array();
-// $order = newOrderWithProspect($order);
+// $client = getClient(false);
+// $order = array(
+//     'billing_address_1' => 'None',
+//     'billing_address_2' => 'None',
+//     'billing_city' => 'None',
+//     'billing_country' => 'US',
+//     'billing_state' => 'AK',
+//     'billing_zip' => '00000',
+//     'campaign_id' => '208',
+//     'credit_card_number' => '4111111111111111',
+//     'credit_card_type' => 'amex',
+//     'cvv' => '111',
+//     'email' => '1@1.com',
+//     'expiration_date' => '1220',
+//     'first_name' => 'None',
+//     'ip_address' => '192.168.1.1',
+//     'last_name' => 'None',
+//     'phone' => '0000000000',
+//     'product_id' => '362',
+//     'shipping_address_1' => 'None',
+//     'shipping_address_2' => 'None',
+//     'shipping_city' => 'None',
+//     'shipping_country' => 'US',
+//     'shipping_id' => '1',
+//     'shipping_state' => 'AK',
+//     'shipping_zip' => '00000',
+// );
+// $order = newOrderCardOnFile($client, $order);
+// $order = newProspect($client, $order);
+// $order = newOrderWithProspect($client, $order);
