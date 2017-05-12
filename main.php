@@ -6,18 +6,33 @@ require_once('vendor/autoload.php');
 
 require_once('settings.php');
 
+function log_($function, $status, $message)
+{
+    switch ($status) {
+        case 1:
+            $log = sprintf("[SUCCESS] %s %s\n", $function, $message);
+            print($log);
+            break;
+        case 0:
+            $log = sprintf("[FAILURE] %s %s\n", $function, $message);
+            print($log);
+            break;
+    }
+}
+
 function selectProducts($client)
 {
-    $options = array();
-    $response = $client->request('GET', '/admin/products/index.php', $options);
+    $response = $client->request('GET', '/admin/products/index.php', array());
     if ($response->getStatusCode() !== 200) {
-        die("selectProducts() - #1");
+        log_('selectProducts()', 0, 'Invalid Status Code - #1');
+        die();
     }
 
     $body = (string) $response->getBody();
     $sql_hash = getSQLHash($body);
     if ($sql_hash === '') {
-        die("selectProducts() - #2");
+        log_('selectProducts()', 0, 'Invalid SQL Hash');
+        die();
     }
 
     $options = array(
@@ -38,7 +53,8 @@ function selectProducts($client)
     );
     $response = $client->request('GET', '/admin/products/index.php', $options);
     if ($response->getStatusCode() !== 200) {
-        die("selectProducts() - #3");
+        log_('selectProducts()', 0, 'Invalid Status Code - #2');
+        die();
     }
 
     $body = $response->getBody();
@@ -50,7 +66,8 @@ function selectProducts($client)
     $xpath = new DomXPath($document);
     $trs = $xpath->query('//div[@class="list-data"]/table[@class="list "]/tr[@class!="list_header"]');
     if (empty($trs)) {
-        die("selectProducts() - #4");
+        log_('selectProducts()', 0, 'Invalid XPath');
+        die();
     }
 
     $products = array();
@@ -60,8 +77,11 @@ function selectProducts($client)
         $products[$sku] = $id;
     }
     if (empty($products)) {
-        die("selectProducts() - #5");
+        log_('selectProducts()', 0, 'Invalid Products');
+        die();
     }
+
+    log_('selectProducts()', 1, '');
 
     return $products;
 }
@@ -101,26 +121,28 @@ function insertProduct($client, $product)
     );
     $response = $client->request('POST', '/admin/products/product_ajax.php', $options);
     if ($response->getStatusCode() !== 200) {
-        die("insertProduct() - #1");
+        log_('insertProduct()', 0, 'Invalid Status Code');
+        die();
     }
 
     $body = $response->getBody();
     $body = json_decode($body, true);
     if ($body['message'] !== 'Successfully created product.') {
-        die("insertProduct() - #2");
+        log_('insertProduct()', 0, 'Invalid Message');
+        die();
     }
 
     $products = selectProducts($client);
-    if (empty($products)) {
-        die("insertProduct() - #3");
-    }
 
     if (!empty($products[$product['sku']])) {
         $product['id'] = $products[$product['sku']];
     }
     if ($product['id'] === 'N/A') {
-        die("insertProduct() - #4");
+        log_('insertProduct()', 0, 'Invalid SKU');
+        die();
     }
+
+    log_('insertProduct()', 1, '');
 
     return $product;
 }
@@ -135,28 +157,33 @@ function deleteProduct($client, $product)
     );
     $response = $client->request('POST', '/admin/products/product_ajax.php', $options);
     if ($response->getStatusCode() !== 200) {
-        die("deleteProduct() - #1");
+        log_('deleteProduct()', 0, 'Invalid Status Code');
+        die();
     }
 
     $body = $response->getBody();
     $body = json_decode($body, true);
     if (strpos($body['status_message'], 'Successfully deleted product.') === false) {
-        die("deleteProduct() - #2");
+        log_('deleteProduct()', 0, 'Invalid Message');
+        die();
     }
+
+    log_('deleteProduct()', 1, '');
 }
 
 function selectGateways($client)
 {
-    $options = array();
-    $response = $client->request('GET', '/admin/gateway/index.php', $options);
+    $response = $client->request('GET', '/admin/gateway/index.php', array());
     if ($response->getStatusCode() !== 200) {
-        die("selectGateways() - #1");
+        log_('selectGateways()', 0, 'Invalid Status Code - #1');
+        die();
     }
 
     $body = (string) $response->getBody();
     $sql_hash = getSQLHash($body);
     if ($sql_hash === '') {
-        die("selectGateways() - #2");
+        log_('selectGateways()', 0, 'Invalid SQL Hash');
+        die();
     }
 
     $options = array(
@@ -177,7 +204,8 @@ function selectGateways($client)
     );
     $response = $client->request('GET', '/admin/gateway/index.php', $options);
     if ($response->getStatusCode() !== 200) {
-        die("selectGateways() - #3");
+        log_('selectGateways()', 0, 'Invalid Status Code - #2');
+        die();
     }
 
     $body = $response->getBody();
@@ -189,7 +217,8 @@ function selectGateways($client)
     $xpath = new DomXPath($document);
     $trs = $xpath->query('//div[@class="list-data"]/table[@class="list "]/tr[@class!="list_header"]');
     if (empty($trs)) {
-        die("selectGateways() - #4");
+        log_('selectGateways()', 0, 'Invalid XPath');
+        die();
     }
 
     $gateways = array();
@@ -199,8 +228,11 @@ function selectGateways($client)
         $gateways[$alias] = $id;
     }
     if (empty($gateways)) {
-        die("selectGateways() - #5");
+        log_('selectGateways()', 0, 'Invalid Gateways');
+        die();
     }
+
+    log_('selectGateways()', 1, '');
 
     return $gateways;
 }
@@ -228,25 +260,27 @@ function insertGateway($client, $gateway)
     );
     $response = $client->request('POST', '/admin/edit_gateways.php', $options);
     if ($response->getStatusCode() !== 200) {
-        die("insertGateway() - #1");
+        log_('insertGateway()', 0, 'Invalid Status Code');
+        die();
     }
 
     $body = (string) $response->getBody();
     if (strpos($body, 'window.opener.RefreshGatewayList') === false) {
-        die("insertGateway() - #2");
+        log_('insertGateway()', 0, 'Invalid Message');
+        die();
     }
 
     $gateways = selectGateways($client);
-    if (empty($gateways)) {
-        die("insertGateway() - #3");
-    }
 
     if (!empty($gateways[$gateway['alias']])) {
         $gateway['id'] = $gateways[$gateway['alias']];
     }
     if ($gateway['id'] === 'N/A') {
-        die("insertGateway() - #4");
+        log_('insertGateway()', 0, 'Invalid Alias');
+        die();
     }
+
+    log_('insertGateway()', 1, '');
 
     return $gateway;
 }
@@ -262,28 +296,33 @@ function deleteGateway($client, $gateway)
     );
     $response = $client->request('POST', '/admin/gateway/ajax.php', $options);
     if ($response->getStatusCode() !== 200) {
-        die("deleteGateway() - #1");
+        log_('deleteGateway()', 0, 'Invalid Status Code');
+        die();
     }
 
     $body = $response->getBody();
     $body = json_decode($body, true);
     if (!empty($body['errors']) or $body['errors'] !== '0') {
-        die("deleteGateway() - #2");
+        log_('deleteGateway()', 0, 'Invalid Message');
+        die();
     }
+
+    log_('deleteGateway()', 1, '');
 }
 
 function selectCampaigns($client)
 {
-    $options = array();
-    $response = $client->request('GET', '/admin/campaign/index.php', $options);
+    $response = $client->request('GET', '/admin/campaign/index.php', array());
     if ($response->getStatusCode() !== 200) {
-        die("selectCampaigns() - #1");
+        log_('selectCampaigns()', 0, 'Invalid Status Code - #1');
+        die();
     }
 
     $body = (string) $response->getBody();
     $sql_hash = getSQLHash($body);
     if ($sql_hash === '') {
-        die("selectCampaigns() - #2");
+        log_('selectCampaigns()', 0, 'Invalid SQL Hash');
+        die();
     }
 
     $options = array(
@@ -304,7 +343,8 @@ function selectCampaigns($client)
     );
     $response = $client->request('GET', '/admin/campaign/index.php', $options);
     if ($response->getStatusCode() !== 200) {
-        die("selectCampaigns() - #3");
+        log_('selectCampaigns()', 0, 'Invalid Status Code - #2');
+        die();
     }
 
     $body = $response->getBody();
@@ -316,7 +356,8 @@ function selectCampaigns($client)
     $xpath = new DomXPath($document);
     $trs = $xpath->query('//div[@class="list-data"]/table[@class="list "]/tr[@class!="list_header"]');
     if (empty($trs)) {
-        die("selectCampaigns() - #4");
+        log_('selectCampaigns()', 0, 'Invalid XPath');
+        die();
     }
 
     $campaigns = array();
@@ -326,16 +367,30 @@ function selectCampaigns($client)
         $campaigns[$name] = $id;
     }
     if (empty($campaigns)) {
-        die("selectCampaigns() - #5");
+        log_('selectCampaigns()', 0, 'Invalid Campaigns');
+        die();
     }
+
+    log_('selectCampaigns()', 1, '');
 
     return $campaigns;
 }
 
 function insertCampaign($client, $campaign, $product, $gateway)
 {
-    $options = array(
+    $response = $client->request('GET', '/admin/campaign/index.php');
+    if ($response->getStatusCode() !== 200) {
+        log_('insertCampaign()', 0, 'Invalid Status Code - #1');
+        die();
+    }
 
+    $response = $client->request('GET', '/admin/campaign/profile.php');
+    if ($response->getStatusCode() !== 200) {
+        log_('insertCampaign()', 0, 'Invalid Status Code - #2');
+        die();
+    }
+
+    $options = array(
         'query' => array(
             'action' => 'll_ajax_create_campaign',
             'top' => '1',
@@ -355,7 +410,6 @@ function insertCampaign($client, $campaign, $product, $gateway)
             'input_webform_url_page_two_name' => 'https://www.example.com/confirmation.php',
             'list_products[]' => $product['id'],
             'post_back_url_name[0]' => '',
-            'products_main_sequence[362]' => '<!--SEQUENCE-->',
             'provider_anti_fraud_id' => '',
             'provider_auto_responder_name' => '',
             'provider_charge_back_id' => '',
@@ -370,7 +424,6 @@ function insertCampaign($client, $campaign, $product, $gateway)
             'radio_campaign_type' => '1',
             'radio_integration' => '2',
             'radio_post_back_order_status[0]' => '1',
-            'radio_post_back_order_type[0]' => '1',
             'radio_post_back_payments[0]' => '2',
             'search_product_upsell' => 'Add a Product: Search by Product Id or Name',
             'search_product' => 'Add a Product: Search by Id or Name',
@@ -401,31 +454,33 @@ function insertCampaign($client, $campaign, $product, $gateway)
             'select_payment_types[]' => 'amex',
             'select_post_back_type[0]' => '1',
             'select_salvage_time' => '',
-            'select_shipping_method[]' => '1',
+            'select_shipping_method[]' => '17',
         ),
     );
     $response = $client->request('POST', '/admin/ajax_min.php', $options);
     if ($response->getStatusCode() !== 200) {
-        die("insertCampaign() - #1");
+        log_('insertCampaign()', 0, 'Invalid Status Code - #3');
+        die();
     }
 
     $body = $response->getBody();
     $body = json_decode($body, true);
     if (strpos($body['message'], 'API Integration successfully saved!') === false) {
-        die("insertCampaign() - #2");
+        log_('insertCampaign()', 0, 'Invalid Message');
+        die();
     }
 
     $campaigns = selectCampaigns($client);
-    if (empty($campaigns)) {
-        die("insertCampaign() - #3");
-    }
 
     if (!empty($campaigns[$campaign['name']])) {
         $campaign['id'] = $campaigns[$campaign['name']];
     }
     if ($campaign['id'] === 'N/A') {
-        die("insertCampaign() - #4");
+        log_('insertCampaign()', 0, 'Invalid Name');
+        die();
     }
+
+    log_('insertCampaign()', 1, '');
 
     return $campaign;
 }
@@ -440,14 +495,18 @@ function deleteCampaign($client, $campaign)
     );
     $response = $client->request('POST', '/admin/ajax_min.php', $options);
     if ($response->getStatusCode() !== 200) {
-        die("deleteCampaign() - #1");
+        log_('deleteCampaign()', 0, 'Invalid Status Code');
+        die();
     }
 
     $body = $response->getBody();
     $body = json_decode($body, true);
     if ($body['message'] !== 'Successfully Deleted Campaign!') {
-        die("deleteCampaign() - #2");
+        log_('deleteCampaign()', 0, 'Invalid Message');
+        die();
     }
+
+    log_('deleteCampaign()', 1, '');
 }
 
 function newOrderCardOnFile($client, $order)
@@ -487,16 +546,18 @@ function newOrderCardOnFile($client, $order)
     );
     $response = $client->request('POST', '/admin/transact.php', $options);
     if ($response->getStatusCode() !== 200) {
-        die("newOrderCardOnFile() - #1");
+        log_('newOrderCardOnFile()', 0, 'Invalid Status Code');
+        die();
     }
 
     $body = (string) $response->getBody();
     parse_str($body, $body);
     if ($body['responseCode'] !== '100') {
-        die("newOrderCardOnFile() - #2");
+        log_('newOrderCardOnFile()', 0, 'Invalid Response Code');
+        die();
     }
 
-    return $order;
+    log_('newOrderCardOnFile()', 1, '');
 }
 
 function newProspect($client, $order)
@@ -522,16 +583,20 @@ function newProspect($client, $order)
     );
     $response = $client->request('POST', '/admin/transact.php', $options);
     if ($response->getStatusCode() !== 200) {
-        die("newProspect() - #1");
+        log_('newProspect()', 0, 'Invalid Status Code');
+        die();
     }
 
     $body = (string) $response->getBody();
     parse_str($body, $body);
     if ($body['responseCode'] !== '100') {
-        die("newProspect() - #2");
+        log_('newProspect()', 0, 'Invalid Response Code');
+        die();
     }
 
     $order['prospect_id'] = $body['prospectId'];
+
+    log_('newProspect()', 1, '');
 
     return $order;
 }
@@ -574,16 +639,18 @@ function newOrderWithProspect($client, $order)
     );
     $response = $client->request('POST', '/admin/transact.php', $options);
     if ($response->getStatusCode() !== 200) {
-        die("newOrderWithProspect() - #1");
+        log_('newOrderWithProspect()', 0, 'Invalid Status Code');
+        die();
     }
 
     $body = (string) $response->getBody();
     parse_str($body, $body);
     if ($body['responseCode'] !== '100') {
-        die("newOrderWithProspect() - #2");
+        log_('newOrderWithProspect()', 0, 'Invalid Response Code');
+        die();
     }
 
-    return $order;
+    log_('newOrderWithProspect()', 1, '');
 }
 
 function getClient($secure)
@@ -591,6 +658,11 @@ function getClient($secure)
     $options = array(
         'base_uri' => $GLOBALS['settings']['url'],
         'cookies' => true,
+        'debug' => true,
+        'headers' => array(
+            'User-Agent' =>
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36',
+        ),
     );
     $client = new \GuzzleHttp\Client($options);
     if (!$secure) {
@@ -599,13 +671,15 @@ function getClient($secure)
 
     $response = $client->request('GET', '/admin/login.php');
     if ($response->getStatusCode() !== 200) {
-        die("getClient() - #1");
+        log_('getClient()', 0, 'Invalid Status Code - #1');
+        die();
     }
 
     $body = (string) $response->getBody();
     $security_token = getSecurityToken($body);
     if ($security_token === '') {
-        die("getClient() - #2");
+        log_('getClient()', 0, 'Invalid Security Token');
+        die();
     }
 
     $options = array(
@@ -618,12 +692,14 @@ function getClient($secure)
     );
     $response = $client->request('POST', '/admin/login.php', $options);
     if ($response->getStatusCode() !== 200) {
-        die("getClient() - #3");
+        log_('getClient()', 0, 'Invalid Status Code - #2');
+        die();
     }
 
     $body = (string) $response->getBody();
     if (strpos($body, '<h1>Dashboard</h1>') === false) {
-        die("getClient() - #4");
+        log_('getClient()', 0, 'Invalid Message');
+        die();
     }
 
     return $client;
@@ -647,95 +723,154 @@ function getSQLHash($body)
     return '';
 }
 
-// $client = getClient(true);
+function listProducts()
+{
+    $client = getClient(true);
+    $products = selectProducts($client);
+    print_r($products);
+}
 
-// $products = selectProducts($client);
-// print_r($products);
+function testProducts()
+{
+    $client = getClient(true);
+    $product = array(
+        'category_id' => '1',
+        'description' => 'MK - limelightcrm.com - Test',
+        'id' => 'N/A',
+        'name' => 'MK - limelightcrm.com - Test',
+        'price' => '100.00',
+        'sku' => 'MK-000000001',
+        'vertical_id' => '1',
+    );
+    $product = insertProduct($client, $product);
+    deleteProduct($client, $product);
+}
 
-// $gateways = selectGateways($client);
-// print_r($gateways);
+function listGateways()
+{
+    $client = getClient(true);
+    $gateways = selectGateways($client);
+    print_r($gateways);
+}
 
-// $campaigns = selectCampaigns($client);
-// print_r($campaigns);
+function testGateways()
+{
+    $client = getClient(true);
+    $gateway = array(
+         'alias' => 'MK-000000001',
+         'description' => 'MK-000000001',
+         'key' => 'MK-000000001',
+         'phone' => '1-800-OFFERLAUNCHHERO',
+    );
+    $gateway = insertGateway($client, $gateway);
+    deleteGateway($client, $gateway);
+}
 
-// $product = array(
-//     'category_id' => '1',
-//     'description' => 'MK - limelightcrm.com - Test',
-//     'id' => 'N/A',
-//     'name' => 'MK - limelightcrm.com - Test',
-//     'price' => '100.00',
-//     'sku' => 'MK-000000001',
-//     'vertical_id' => '1',
-// );
-// $product = insertProduct($client, $product);
-// print_r($product);
+function listCampaigns()
+{
+    $client = getClient(true);
+    $campaigns = selectCampaigns($client);
+    print_r($campaigns);
+}
 
-// $gateway = array(
-//      'alias' => 'MK-000000001',
-//      'description' => 'MK-000000001',
-//      'key' => 'MK-000000001',
-//      'phone' => '1-800-OFFERLAUNCHHERO',
-// );
-// $gateway = insertGateway($client, $gateway);
-// print_r($gateway);
+function testCampaigns()
+{
+    $client = getClient(true);
+    $product = array(
+        'id' => '333',
+    );
+    $gateway = array(
+        'id' => '43',
+    );
+    $campaign = array(
+        'description' => 'MK-000000001',
+        'id' => '',
+        'name' => 'MK-000000001',
+    );
+    $campaign = insertCampaign($client, $campaign, $product, $gateway);
+    deleteCampaign($client, $campaign);
+}
 
-// $product = array(
-//     'category_id' => '1',
-//     'description' => 'MK - limelightcrm.com - Test',
-//     'id' => '362',
-//     'name' => 'MK - limelightcrm.com - Test',
-//     'price' => '100.00',
-//     'sku' => 'MK-000000001',
-//     'vertical_id' => '1',
-// );
-// $gateway = array(
-//     'alias' => 'MK-000000001',
-//     'description' => 'MK-000000001',
-//     'id' => '66',
-//     'key' => 'MK-000000001',
-//     'phone' => '1-800-OFFERLAUNCHHERO',
-// );
-// $campaign = array(
-//     'description' => 'MK-000000001',
-//     'id' => '',
-//     'name' => 'MK-000000001',
-// );
-// $campaign = insertCampaign($client, $campaign, $product, $gateway);
-// print_r($campaign);
+function testOrders()
+{
+    $client = getClient(false);
+    $order = array(
+        'billing_address_1' => 'None',
+        'billing_address_2' => 'None',
+        'billing_city' => 'None',
+        'billing_country' => 'US',
+        'billing_state' => 'AK',
+        'billing_zip' => '00000',
+        'campaign_id' => '208',
+        'credit_card_number' => '4111111111111111',
+        'credit_card_type' => 'amex',
+        'cvv' => '111',
+        'email' => '1@1.com',
+        'expiration_date' => '1220',
+        'first_name' => 'None',
+        'ip_address' => '192.168.1.1',
+        'last_name' => 'None',
+        'phone' => '0000000000',
+        'product_id' => '362',
+        'shipping_address_1' => 'None',
+        'shipping_address_2' => 'None',
+        'shipping_city' => 'None',
+        'shipping_country' => 'US',
+        'shipping_id' => '1',
+        'shipping_state' => 'AK',
+        'shipping_zip' => '00000',
+    );
+    newOrderCardOnFile($client, $order);
+    $order = array(
+        'billing_address_1' => 'None',
+        'billing_address_2' => 'None',
+        'billing_city' => 'None',
+        'billing_country' => 'US',
+        'billing_state' => 'AK',
+        'billing_zip' => '00000',
+        'campaign_id' => '208',
+        'credit_card_number' => '4111111111111111',
+        'credit_card_type' => 'amex',
+        'cvv' => '111',
+        'email' => '1@1.com',
+        'expiration_date' => '1220',
+        'first_name' => 'None',
+        'ip_address' => '192.168.1.1',
+        'last_name' => 'None',
+        'phone' => '0000000000',
+        'product_id' => '362',
+        'shipping_address_1' => 'None',
+        'shipping_address_2' => 'None',
+        'shipping_city' => 'None',
+        'shipping_country' => 'US',
+        'shipping_id' => '1',
+        'shipping_state' => 'AK',
+        'shipping_zip' => '00000',
+    );
+    $order = newProspect($client, $order);
+    newOrderWithProspect($client, $order);
+}
 
-// deleteCampaign($client, $campaign);
-
-// deleteGateway($client, $gateway);
-
-// deleteProduct($client, $product);
-
-// $client = getClient(false);
-// $order = array(
-//     'billing_address_1' => 'None',
-//     'billing_address_2' => 'None',
-//     'billing_city' => 'None',
-//     'billing_country' => 'US',
-//     'billing_state' => 'AK',
-//     'billing_zip' => '00000',
-//     'campaign_id' => '208',
-//     'credit_card_number' => '4111111111111111',
-//     'credit_card_type' => 'amex',
-//     'cvv' => '111',
-//     'email' => '1@1.com',
-//     'expiration_date' => '1220',
-//     'first_name' => 'None',
-//     'ip_address' => '192.168.1.1',
-//     'last_name' => 'None',
-//     'phone' => '0000000000',
-//     'product_id' => '362',
-//     'shipping_address_1' => 'None',
-//     'shipping_address_2' => 'None',
-//     'shipping_city' => 'None',
-//     'shipping_country' => 'US',
-//     'shipping_id' => '1',
-//     'shipping_state' => 'AK',
-//     'shipping_zip' => '00000',
-// );
-// $order = newOrderCardOnFile($client, $order);
-// $order = newProspect($client, $order);
-// $order = newOrderWithProspect($client, $order);
+switch ($argv[1]) {
+    case '--list-products':
+        listProducts();
+        break;
+    case '--test-products':
+        testProducts();
+        break;
+    case '--list-gateways':
+        listGateways();
+        break;
+    case '--test-gateways':
+        testGateways();
+        break;
+    case '--list-campaigns':
+        listCampaigns();
+        break;
+    case '--test-campaigns':
+        testCampaigns();
+        break;
+    case '--test-orders':
+        testOrders();
+        break;
+}
