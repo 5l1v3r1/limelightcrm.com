@@ -851,6 +851,47 @@ function testOrders()
     newOrderWithProspect($client, $order);
 }
 
+function clean($domain)
+{
+    $client = getClient(true);
+    $campaigns = selectCampaigns($client);
+    if (!empty($campaigns)) {
+        foreach ($campaigns as $key => $value) {
+            if (strpos($key, $domain) !== false) {
+                print_r(array($key, $value));
+                $campaign = array(
+                    'id' => $value,
+                );
+                deleteCampaign($client, $campaign);
+            }
+        }
+    }
+    $gateways = selectGateways($client);
+    if (!empty($gateways)) {
+        foreach ($gateways as $key => $value) {
+            if (strpos($key, $domain) !== false) {
+                print_r(array($key, $value));
+                $gateway = array(
+                    'id' => $value,
+                );
+                deleteGateway($client, $gateway);
+            }
+        }
+    }
+    $products = selectProducts($client);
+    if (!empty($products)) {
+        foreach ($products as $key => $value) {
+            if (strpos($key, $domain) !== false) {
+                print_r(array($key, $value));
+                $product = array(
+                    'id' => $value,
+                );
+                deleteProduct($client, $product);
+            }
+        }
+    }
+}
+
 switch ($argv[1]) {
     case '--list-products':
         listProducts();
@@ -872,5 +913,8 @@ switch ($argv[1]) {
         break;
     case '--test-orders':
         testOrders();
+        break;
+    case '--clean':
+        clean($argv[2]);
         break;
 }
